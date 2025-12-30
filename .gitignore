@@ -1,0 +1,10 @@
+# Node modules
+backend/node_modules/
+
+# Environment variables
+backend/.env
+
+# Flutter build files
+flutter-app/build/
+flutter-app/.dart_tool/
+flutter-app/.packages
