@@ -16,22 +16,27 @@ class _RegisterPageState extends State<RegisterPage> {
   String error = '';
   bool loading = false;
 
-  Future<void> register() async {
+  Future<void> doRegister() async {
     setState(() {
       loading = true;
-      msg = '';
       error = '';
+      msg = '';
     });
 
     try {
+      if (role == 'admin') {
+        throw Exception("Admin is manual (not allowed in Register).");
+      }
+
       await ApiService.createUser(
         name: nameCtrl.text.trim(),
         email: emailCtrl.text.trim(),
-        role: role, // only student/teacher
+        role: role,
       );
+
       setState(() => msg = "Account created ✅ Now go back and login.");
     } catch (e) {
-      setState(() => error = e.toString().replaceAll('Exception: ', ''));
+      setState(() => error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       setState(() => loading = false);
     }
@@ -49,44 +54,62 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("Register")),
       body: Center(
-        child: SizedBox(
-          width: 520,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Card(
+            margin: const EdgeInsets.all(16),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: "Name", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Name",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: emailCtrl,
-                    decoration: const InputDecoration(labelText: "Email", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: role,
-                    decoration: const InputDecoration(labelText: "Role", border: OutlineInputBorder()),
                     items: const [
                       DropdownMenuItem(value: 'student', child: Text('student')),
                       DropdownMenuItem(value: 'teacher', child: Text('teacher')),
+                      DropdownMenuItem(value: 'admin', child: Text('admin (manual)')),
                     ],
                     onChanged: (v) => setState(() => role = v ?? 'student'),
+                    decoration: const InputDecoration(
+                      labelText: "Role",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                  if (msg.isNotEmpty) Text(msg, style: const TextStyle(color: Colors.green)),
-                  if (error.isNotEmpty) Text(error, style: const TextStyle(color: Colors.red)),
+                  if (error.isNotEmpty)
+                    Text(error, style: const TextStyle(color: Colors.red)),
+                  if (msg.isNotEmpty)
+                    Text(msg, style: const TextStyle(color: Colors.green)),
 
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: loading ? null : register,
-                    child: loading
-                        ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text("Create account"),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: loading ? null : doRegister,
+                      child: loading
+                          ? const SizedBox(
+                              width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text("Create account"),
+                    ),
                   ),
                 ],
               ),

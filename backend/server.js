@@ -4,10 +4,16 @@ const userRoutes =require("./routes/userRoutes");
 const classRoutes = require("./routes/classRoutes");
 const app = express();
 const  cors = require ("cors");
+const agendaRoutes = require("./routes/agendaRoutes");
+const gradeRoutes = require("./routes/gradeRoutes");
+
 
 app.use(express.json());
 
 app.use(cors());
+app.use("/agenda", agendaRoutes);
+app.use("/grades", gradeRoutes);
+
 
 // Connect to MongoDB
 connectDB();
