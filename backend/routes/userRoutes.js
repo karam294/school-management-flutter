@@ -4,16 +4,22 @@ const {
   updateUser,
   getUsersByCriteria,
   deleteUser,
+  login, // ✅ now exists
 } = require("../controllers/userController");
 
-// create/insert
+// register
 router.post("/", createUser);
+
+// login
+router.post("/login", login);
 
 // update
 router.put("/:id", updateUser);
 
-// find with criteria
-// example: /users?role=student&name=alice
+// find users
 router.get("/", getUsersByCriteria);
+
+// delete
 router.delete("/:id", deleteUser);
+
 module.exports = router;

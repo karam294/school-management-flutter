@@ -18,24 +18,39 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
-  static Future<Map<String, dynamic>> login({
-    required String email,
-    required String role,
-  }) async {
-    final users = await getUsers(email: email, role: role);
-    if (users.isEmpty) throw Exception("No user found with this email and role");
-    return users.first as Map<String, dynamic>;
+static Future<Map<String, dynamic>> login({
+  required String email,
+  required String password,
+  required String role,
+}) async {
+  final res = await http.post(
+    Uri.parse('$baseUrl/users/login'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'email': email,
+      'password': password,
+      'role': role,
+    }),
+  );
+
+  if (res.statusCode >= 400) {
+    throw Exception(res.body);
   }
+
+  return jsonDecode(res.body);
+}
+
 
   static Future<Map<String, dynamic>> createUser({
     required String name,
     required String email,
+    required String password,
     required String role,
   }) async {
     final res = await http.post(
       Uri.parse('$baseUrl/users'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': name, 'email': email, 'role': role}),
+      body: jsonEncode({'name': name, 'email': email, 'password':password,'role': role}),
     );
 
     if (res.statusCode >= 400) throw Exception(res.body);

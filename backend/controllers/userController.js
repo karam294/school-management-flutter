@@ -1,16 +1,48 @@
 const User = require("../models/user");
 
-// CREATE (insert)
+/* ---------------- REGISTER ---------------- */
 exports.createUser = async (req, res) => {
   try {
     const user = await User.create(req.body);
-    res.status(201).json(user);
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.status(201).json(userObj);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// UPDATE
+/* ---------------- LOGIN ---------------- */
+exports.login = async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+
+    if (!email || !password || !role) {
+      return res.status(400).json({ error: "Missing credentials" });
+    }
+
+    const user = await User.findOne({ email, role });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.json(userObj);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/* ---------------- OTHER ---------------- */
 exports.updateUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -23,7 +55,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// FIND with 2 criteria (example: role + email OR role + name)
 exports.getUsersByCriteria = async (req, res) => {
   try {
     const { role, name, email } = req.query;
@@ -33,12 +64,13 @@ exports.getUsersByCriteria = async (req, res) => {
     if (name) filter.name = name;
     if (email) filter.email = email;
 
-    const users = await User.find(filter);
+    const users = await User.find(filter).select("-password");
     res.json(users);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
 exports.deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);

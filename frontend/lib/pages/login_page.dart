@@ -13,6 +13,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final emailCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController(); // ✅ added
   String role = 'student';
   String error = '';
   bool loading = false;
@@ -23,9 +24,20 @@ class _LoginPageState extends State<LoginPage> {
       error = '';
     });
 
+    // ✅ basic validation
+    if (emailCtrl.text.trim().isEmpty ||
+        passwordCtrl.text.trim().isEmpty) {
+      setState(() {
+        error = "Email and password are required";
+        loading = false;
+      });
+      return;
+    }
+
     try {
       final user = await ApiService.login(
         email: emailCtrl.text.trim(),
+        password: passwordCtrl.text.trim(), // ✅ send password
         role: role,
       );
 
@@ -46,7 +58,8 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (_) => RoleDashboard(user: user)),
       );
     } catch (e) {
-      setState(() => error = e.toString().replaceFirst('Exception: ', ''));
+      setState(() =>
+          error = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       setState(() => loading = false);
     }
@@ -55,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     emailCtrl.dispose();
+    passwordCtrl.dispose(); // ✅ dispose password
     super.dispose();
   }
 
@@ -73,12 +87,17 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Text(
                     "School Management",
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
+                  // Email
                   TextField(
                     controller: emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: "Email",
                       border: OutlineInputBorder(),
@@ -86,14 +105,30 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 12),
 
+                  // Password
+                  TextField(
+                    controller: passwordCtrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Role
                   DropdownButtonFormField<String>(
                     value: role,
                     items: const [
-                      DropdownMenuItem(value: 'student', child: Text('student')),
-                      DropdownMenuItem(value: 'teacher', child: Text('teacher')),
-                      DropdownMenuItem(value: 'admin', child: Text('admin')),
+                      DropdownMenuItem(
+                          value: 'student', child: Text('student')),
+                      DropdownMenuItem(
+                          value: 'teacher', child: Text('teacher')),
+                      DropdownMenuItem(
+                          value: 'admin', child: Text('admin')),
                     ],
-                    onChanged: (v) => setState(() => role = v ?? 'student'),
+                    onChanged: (v) =>
+                        setState(() => role = v ?? 'student'),
                     decoration: const InputDecoration(
                       labelText: "Role",
                       border: OutlineInputBorder(),
@@ -105,9 +140,13 @@ class _LoginPageState extends State<LoginPage> {
                   if (error.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(error, style: const TextStyle(color: Colors.red)),
+                      child: Text(
+                        error,
+                        style: const TextStyle(color: Colors.red),
+                      ),
                     ),
 
+                  // Login button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -116,7 +155,9 @@ class _LoginPageState extends State<LoginPage> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
                             )
                           : const Text("Login"),
                     ),
@@ -128,7 +169,9 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterPage(),
+                        ),
                       );
                     },
                     child: const Text("No account? Register"),
@@ -136,8 +179,9 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 6),
                   const Text(
-                    "Enter an email that exists in DB + the correct role.",
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                    "Use a registered email, password, and correct role",
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
               ),

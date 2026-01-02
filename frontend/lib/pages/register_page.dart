@@ -11,6 +11,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController(); // moved inside state
+
   String role = 'student';
   String msg = '';
   String error = '';
@@ -23,6 +25,15 @@ class _RegisterPageState extends State<RegisterPage> {
       msg = '';
     });
 
+    // Simple validation
+    if (passwordCtrl.text.trim().isEmpty) {
+      setState(() {
+        error = "Password cannot be empty";
+        loading = false;
+      });
+      return;
+    }
+
     try {
       if (role == 'admin') {
         throw Exception("Admin is manual (not allowed in Register).");
@@ -32,6 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
         name: nameCtrl.text.trim(),
         email: emailCtrl.text.trim(),
         role: role,
+        password: passwordCtrl.text.trim(), // send password
       );
 
       setState(() => msg = "Account created ✅ Now go back and login.");
@@ -46,6 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     nameCtrl.dispose();
     emailCtrl.dispose();
+    passwordCtrl.dispose(); // dispose password controller
     super.dispose();
   }
 
@@ -63,6 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Name field
                   TextField(
                     controller: nameCtrl,
                     decoration: const InputDecoration(
@@ -71,6 +85,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Email field
                   TextField(
                     controller: emailCtrl,
                     decoration: const InputDecoration(
@@ -79,6 +95,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Password field
+                  TextField(
+                    controller: passwordCtrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Role dropdown
                   DropdownButtonFormField<String>(
                     value: role,
                     items: const [
@@ -94,19 +123,23 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Error or success messages
                   if (error.isNotEmpty)
                     Text(error, style: const TextStyle(color: Colors.red)),
                   if (msg.isNotEmpty)
                     Text(msg, style: const TextStyle(color: Colors.green)),
-
                   const SizedBox(height: 10),
+
+                  // Register button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: loading ? null : doRegister,
                       child: loading
                           ? const SizedBox(
-                              width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2),
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text("Create account"),
                     ),
@@ -120,3 +153,4 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+ 
