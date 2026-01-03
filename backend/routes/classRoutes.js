@@ -1,15 +1,26 @@
 const router = require("express").Router();
-const { createClass, getClassWithStudents, classStats , getAllClasses, deleteClass} = require("../controllers/classController");
+const {
+  createClass,
+  getClassWithStudents,
+  classStats,
+  getAllClasses,
+  addStudentToClass,
+  removeStudentFromClass,
+  deleteClass,
+} = require("../controllers/classController");
 
 router.post("/", createClass);
 
-// ✅ populate
-
-
-// ✅ aggregate
 router.get("/stats/all", classStats);
-router.get("/",getAllClasses);
+router.get("/", getAllClasses);
+
+// student management
+router.post("/:id/addStudent", addStudentToClass);
+router.post("/:id/removeStudent", removeStudentFromClass);
+
+// populate
 router.get("/:id", getClassWithStudents);
+
 router.delete("/:id", deleteClass);
 
 module.exports = router;

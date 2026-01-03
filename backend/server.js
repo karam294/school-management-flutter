@@ -11,7 +11,7 @@ const gradeRoutes = require("./routes/gradeRoutes");
 app.use(express.json());
 
 app.use(cors());
-app.use("/agenda", agendaRoutes);
+app.use("/agendas", agendaRoutes);
 app.use("/grades", gradeRoutes);
 
 
