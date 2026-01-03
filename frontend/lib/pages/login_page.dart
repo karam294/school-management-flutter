@@ -66,11 +66,12 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const cardColor = Color(0xFF2A3140);   // slightly lighter than background
-    const fieldColor = Color(0xFF202633);  // input background
-    const accent = Color(0xFF5B6CFF);      // small touch color (button)
+    const cardColor = Color(0xFF2A3140);
+    const fieldColor = Color(0xFF202633);
+    const accent = Color(0xFF5B6CFF);
 
     return Scaffold(
+      backgroundColor: AppBackground.bg,
       body: AppBackground(
         child: Center(
           child: ConstrainedBox(

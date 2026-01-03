@@ -15,14 +15,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    match: /.+\@.+\..+/ // simple email validation
+    match: /.+\@.+\..+/
   },
   isActive: { type: Boolean, default: true },
   classId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Class' // only for students
+    ref: 'Class'
   }
 });
 
 module.exports = mongoose.model('User', userSchema);
-      

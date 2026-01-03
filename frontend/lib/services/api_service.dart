@@ -35,14 +35,25 @@ class ApiService {
     return _decode(res) as List<dynamic>;
   }
 
-  // Demo login: find by role + email
-  static Future<Map<String, dynamic>> login({required String email, required String role}) async {
-    final users = await getUsers(email: email, role: role);
-    if (users.isEmpty) throw Exception("No user found with this email + role");
-    return (users.first as Map).cast<String, dynamic>();
+  // ✅ OLD LOGIN: email + role ONLY
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String role,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/users/login'),
+      headers: _headers(),
+      body: jsonEncode({
+        'email': email,
+        'role': role,
+      }),
+    );
+
+    _throwIfError(res);
+    return (_decode(res) as Map).cast<String, dynamic>();
   }
 
-  // Register: if role=student you must send grade+section
+  // ✅ OLD CREATE USER: NO PASSWORD
   static Future<Map<String, dynamic>> createUser({
     required String name,
     required String email,
@@ -51,25 +62,33 @@ class ApiService {
     String? section,
   }) async {
     final body = <String, dynamic>{
-      "name": name,
-      "email": email,
-      "role": role,
+      'name': name,
+      'email': email,
+      'role': role,
     };
 
+    // If your backend expects grade/section, include them only for student
     if (role == "student") {
-      body["grade"] = grade;
-      body["section"] = section;
+      if (grade != null) body["grade"] = grade;
+      if (section != null) body["section"] = section;
     }
 
-    final res = await http.post(Uri.parse('$baseUrl/users'),
-        headers: _headers(), body: jsonEncode(body));
+    final res = await http.post(
+      Uri.parse('$baseUrl/users'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
+
     _throwIfError(res);
     return (_decode(res) as Map).cast<String, dynamic>();
   }
 
   static Future<Map<String, dynamic>> updateUser(String id, Map<String, dynamic> body) async {
-    final res = await http.put(Uri.parse('$baseUrl/users/$id'),
-        headers: _headers(), body: jsonEncode(body));
+    final res = await http.put(
+      Uri.parse('$baseUrl/users/$id'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
     _throwIfError(res);
     return (_decode(res) as Map).cast<String, dynamic>();
   }
@@ -93,11 +112,24 @@ class ApiService {
     return (_decode(res) as Map).cast<String, dynamic>();
   }
 
+  static Future<Map<String, dynamic>> addStudentToClass(String classId, String studentId) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/classes/$classId/addStudent'),
+      headers: _headers(),
+      body: jsonEncode({"studentId": studentId}),
+    );
+    _throwIfError(res);
+    return (_decode(res) as Map).cast<String, dynamic>();
+  }
+
   /* ---------------- AGENDA ---------------- */
 
   static Future<Map<String, dynamic>> createAgenda(Map<String, dynamic> body) async {
-    final res = await http.post(Uri.parse('$baseUrl/agendas'),
-        headers: _headers(), body: jsonEncode(body));
+    final res = await http.post(
+      Uri.parse('$baseUrl/agendas'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
     _throwIfError(res);
     return (_decode(res) as Map).cast<String, dynamic>();
   }
@@ -112,8 +144,11 @@ class ApiService {
   /* ---------------- GRADES ---------------- */
 
   static Future<Map<String, dynamic>> createGrade(Map<String, dynamic> body) async {
-    final res = await http.post(Uri.parse('$baseUrl/grades'),
-        headers: _headers(), body: jsonEncode(body));
+    final res = await http.post(
+      Uri.parse('$baseUrl/grades'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
     _throwIfError(res);
     return (_decode(res) as Map).cast<String, dynamic>();
   }
@@ -124,17 +159,4 @@ class ApiService {
     _throwIfError(res);
     return _decode(res) as List<dynamic>;
   }
-  static Future<Map<String, dynamic>> addStudentToClass(String classId, String studentId) async {
-  final res = await http.post(
-    Uri.parse('$baseUrl/classes/$classId/addStudent'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({"studentId": studentId}),
-  );
-
-  if (res.statusCode >= 400) {
-    throw Exception(res.body);
-  }
-  return json.decode(res.body);
-}
-
 }
