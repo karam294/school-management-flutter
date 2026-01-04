@@ -12,6 +12,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController(); // Added password controller
 
   String role = 'student';
   int grade = 10;
@@ -32,13 +33,19 @@ class _RegisterPageState extends State<RegisterPage> {
       if (role == 'admin') {
         throw Exception("Admin is manual (not allowed in Register).");
       }
-      if (nameCtrl.text.trim().isEmpty || emailCtrl.text.trim().isEmpty) {
-        throw Exception("Name and Email are required.");
+      if (nameCtrl.text.trim().isEmpty ||
+          emailCtrl.text.trim().isEmpty ||
+          passwordCtrl.text.trim().isEmpty) {
+        throw Exception("Name, Email, and Password are required.");
+      }
+      if (passwordCtrl.text.trim().length < 6) {
+        throw Exception("Password must be at least 6 characters.");
       }
 
       await ApiService.createUser(
         name: nameCtrl.text.trim(),
         email: emailCtrl.text.trim(),
+        password: passwordCtrl.text.trim(), // send password
         role: role,
         grade: role == "student" ? grade : null,
         section: role == "student" ? section : null,
@@ -56,6 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     nameCtrl.dispose();
     emailCtrl.dispose();
+    passwordCtrl.dispose();
     super.dispose();
   }
 
@@ -80,7 +88,8 @@ class _RegisterPageState extends State<RegisterPage> {
               color: cardColor,
               elevation: 8,
               margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Column(
@@ -116,15 +125,33 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
+                    TextField(
+                      controller: passwordCtrl, // Added password field
+                      obscureText: true,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: fieldColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: role,
                       dropdownColor: cardColor,
                       style: const TextStyle(color: Colors.white),
                       items: const [
-                        DropdownMenuItem(value: 'student', child: Text('Student')),
-                        DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
-                        DropdownMenuItem(value: 'admin', child: Text('Admin (manual)')),
+                        DropdownMenuItem(
+                            value: 'student', child: Text('Student')),
+                        DropdownMenuItem(
+                            value: 'teacher', child: Text('Teacher')),
+                        DropdownMenuItem(
+                            value: 'admin', child: Text('Admin (manual)')),
                       ],
                       onChanged: (v) => setState(() => role = v ?? 'student'),
                       decoration: InputDecoration(
@@ -138,71 +165,18 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
                     ),
-
                     if (role == "student") ...[
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              value: grade,
-                              dropdownColor: cardColor,
-                              style: const TextStyle(color: Colors.white),
-                              items: List.generate(
-                                12,
-                                (i) => DropdownMenuItem(
-                                  value: i + 1,
-                                  child: Text("Grade ${i + 1}"),
-                                ),
-                              ),
-                              onChanged: (v) => setState(() => grade = v ?? 10),
-                              decoration: InputDecoration(
-                                labelText: "Grade",
-                                labelStyle: const TextStyle(color: Colors.white70),
-                                filled: true,
-                                fillColor: fieldColor,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: section,
-                              dropdownColor: cardColor,
-                              style: const TextStyle(color: Colors.white),
-                              items: const [
-                                DropdownMenuItem(value: "A", child: Text("Section A")),
-                                DropdownMenuItem(value: "B", child: Text("Section B")),
-                                DropdownMenuItem(value: "C", child: Text("Section C")),
-                              ],
-                              onChanged: (v) => setState(() => section = v ?? "A"),
-                              decoration: InputDecoration(
-                                labelText: "Section",
-                                labelStyle: const TextStyle(color: Colors.white70),
-                                filled: true,
-                                fillColor: fieldColor,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                     
                     ],
-
                     const SizedBox(height: 16),
-
                     if (error.isNotEmpty)
-                      Text(error, style: const TextStyle(color: Colors.redAccent)),
+                      Text(error,
+                          style: const TextStyle(color: Colors.redAccent)),
                     if (msg.isNotEmpty)
-                      Text(msg, style: const TextStyle(color: Colors.lightGreenAccent)),
-
+                      Text(msg,
+                          style:
+                              const TextStyle(color: Colors.lightGreenAccent)),
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
@@ -212,7 +186,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text("Create account"),
                       ),

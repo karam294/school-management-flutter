@@ -29,23 +29,24 @@ class ApiService {
     if (email != null && email.isNotEmpty) params["email"] = email;
     if (name != null && name.isNotEmpty) params["name"] = name;
 
-    final uri = Uri.parse('$baseUrl/users').replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse('$baseUrl/users')
+        .replace(queryParameters: params.isEmpty ? null : params);
     final res = await http.get(uri);
     _throwIfError(res);
     return _decode(res) as List<dynamic>;
   }
 
-  // ✅ OLD LOGIN: email + role ONLY
+  /* ---------------- LOGIN (UPDATED) ---------------- */
   static Future<Map<String, dynamic>> login({
     required String email,
-    required String role,
+    required String password,
   }) async {
     final res = await http.post(
       Uri.parse('$baseUrl/users/login'),
       headers: _headers(),
       body: jsonEncode({
         'email': email,
-        'role': role,
+        'password': password,
       }),
     );
 
@@ -53,10 +54,11 @@ class ApiService {
     return (_decode(res) as Map).cast<String, dynamic>();
   }
 
-  // ✅ OLD CREATE USER: NO PASSWORD
+  /* ---------------- REGISTER (UPDATED) ---------------- */
   static Future<Map<String, dynamic>> createUser({
     required String name,
     required String email,
+    required String password,
     required String role,
     int? grade,
     String? section,
@@ -64,10 +66,10 @@ class ApiService {
     final body = <String, dynamic>{
       'name': name,
       'email': email,
+      'password': password,
       'role': role,
     };
 
-    // If your backend expects grade/section, include them only for student
     if (role == "student") {
       if (grade != null) body["grade"] = grade;
       if (section != null) body["section"] = section;
@@ -112,7 +114,8 @@ class ApiService {
     return (_decode(res) as Map).cast<String, dynamic>();
   }
 
-  static Future<Map<String, dynamic>> addStudentToClass(String classId, String studentId) async {
+  static Future<Map<String, dynamic>> addStudentToClass(
+      String classId, String studentId) async {
     final res = await http.post(
       Uri.parse('$baseUrl/classes/$classId/addStudent'),
       headers: _headers(),
@@ -135,7 +138,8 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getAgendaByClass(String classId) async {
-    final uri = Uri.parse('$baseUrl/agendas').replace(queryParameters: {"classId": classId});
+    final uri = Uri.parse('$baseUrl/agendas')
+        .replace(queryParameters: {"classId": classId});
     final res = await http.get(uri);
     _throwIfError(res);
     return _decode(res) as List<dynamic>;
@@ -154,7 +158,8 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getGradesForStudent(String studentId) async {
-    final uri = Uri.parse('$baseUrl/grades').replace(queryParameters: {"studentId": studentId});
+    final uri = Uri.parse('$baseUrl/grades')
+        .replace(queryParameters: {"studentId": studentId});
     final res = await http.get(uri);
     _throwIfError(res);
     return _decode(res) as List<dynamic>;

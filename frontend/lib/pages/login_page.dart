@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final emailCtrl = TextEditingController();
-  String role = 'student';
+  final passwordCtrl = TextEditingController();
   String error = '';
   bool loading = false;
 
@@ -28,17 +28,18 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final user = await ApiService.login(
         email: emailCtrl.text.trim(),
-        role: role,
+        password: passwordCtrl.text.trim(),
       );
 
       if (!mounted) return;
 
-      if (role == "teacher") {
+      // Navigate based on backend role
+      if (user['role'] == "teacher") {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => TeacherPage(teacher: user)),
         );
-      } else if (role == "admin") {
+      } else if (user['role'] == "admin") {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => AdminPage(admin: user)),
@@ -61,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     emailCtrl.dispose();
+    passwordCtrl.dispose();
     super.dispose();
   }
 
@@ -100,6 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 22),
 
+                    // Email Field
                     TextField(
                       controller: emailCtrl,
                       style: const TextStyle(color: Colors.white),
@@ -117,20 +120,15 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 14),
 
-                    DropdownButtonFormField<String>(
-                      value: role,
-                      dropdownColor: cardColor,
+                    // Password Field
+                    TextField(
+                      controller: passwordCtrl,
+                      obscureText: true,
                       style: const TextStyle(color: Colors.white),
-                      items: const [
-                        DropdownMenuItem(value: 'student', child: Text('Student')),
-                        DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
-                        DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                      ],
-                      onChanged: (v) => setState(() => role = v ?? 'student'),
                       decoration: InputDecoration(
-                        labelText: "Role",
+                        labelText: "Password",
                         labelStyle: const TextStyle(color: Colors.white70),
-                        prefixIcon: const Icon(Icons.badge, color: Colors.white70),
+                        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                         filled: true,
                         fillColor: fieldColor,
                         border: OutlineInputBorder(
@@ -139,7 +137,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
                     if (error.isNotEmpty)
@@ -152,6 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
 
+                    // Login Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -182,6 +180,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 10),
 
+                    // Navigate to Register
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -204,3 +203,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+        
